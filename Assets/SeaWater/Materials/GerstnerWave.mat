@@ -67,16 +67,28 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SkyBox:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaterFoamTex:
+        m_Texture: {fileID: 2800000, guid: 7c3eae9e61920e44b8420bc35d668ef7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _WaterRimNoise:
+        m_Texture: {fileID: 2800000, guid: f668cb598ab59994dba4b3eaf5a88a83, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Floats:
     - _Albedo: 1.79
     - _Amplitude: 0.1
-    - _BorderTransparentFadeFactor: 8
+    - _BorderTransparentFadeFactor: 6
     - _BumpScale: 1
     - _BumpTexScale: 0.21
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _Fresnel: 0.2
+    - _Fresnel: 0.1
     - _FresnelFactor: 0.05
     - _FresnelPOW: 5
     - _GlossMapScale: 1
@@ -88,18 +100,18 @@ Material:
     - _Parallax: 0.02
     - _Phase: 0.1
     - _Roughness: 0.91
-    - _Shininess: 35.59
+    - _Shininess: 36
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Steepness: 0.02
+    - _Steepness: 0.05
     - _UVSec: 0
     - _UVWaveEnable: 1
-    - _WaveAmplitude: 2
-    - _WaveLength: 0.2
+    - _WaveAmplitude: 0.2
+    - _WaveLength: 0.6
     - _WaveLengthFactor: 1.5
     - _WaveScale: 0.118
-    - _WaveSpeed: 2
+    - _WaveSpeed: 0.2
     - _WaveSpeedFactor: 0.5
     - _ZWrite: 1
     m_Colors:
@@ -109,7 +121,10 @@ Material:
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecularColor: {r: 0.78964937, g: 0.8445584, b: 0.8584906, a: 0.1882353}
     - _UVWaveSpeed: {r: 3, g: 1, b: -3, a: -1}
-    - _WaterBorderColor: {r: 0.9622642, g: 0.9622642, b: 0.9622642, a: 0.4627451}
-    - _WaterColor: {r: 0, g: 0.31132078, b: 0.2853774, a: 0.6431373}
+    - _VertexOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _WaterBorderColor: {r: 0.31083125, g: 0.46472138, b: 0.5188679, a: 0.11372549}
+    - _WaterColor: {r: 0, g: 0.38039216, b: 0.50980395, a: 0.8235294}
+    - _WaterRimColor: {r: 1, g: 1, b: 1, a: 1}
     - _WaveDir: {r: 4.54, g: 2.13, b: 2.61, a: 1}
+    - _WaveDirection: {r: 1, g: 4, b: 0, a: 0}
     - _WaveSpeed: {r: -9, g: 4.5, b: -8, a: -3.5}

@@ -4,13 +4,17 @@
 	{
 		_BumpTex("Bump Tex[凹凸]", 2D) = "white" {}
 
-		_WaterColor("Water Color [水颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
+		[HDR]_WaterColor("Water Color [水颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
 
-		_WaterBorderColor ("Water Border Color [水边缘颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
+		[HDR]_WaterRimColor ("Water Border Color [水边缘颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
+
+		_WaterRimNoise ("Water Rim Noise [水边缘颜色噪点图]", 2D) = "white" {}
 
 		_BumpTexScale("Bump Tex scale [凹凸贴图缩放]", Range(0, 1)) = 0.063
 
-		_FoamTex("Foam Tex[泡沫]", 2D) = "white"{}
+		_SkyBox("SkyBox Reflection Map", Cube) = "" {}
+
+		_WaterFoamTex("Foam Tex[泡沫]", 2D) = "white"{}
 
 		_UVWaveSpeed(" UV wave speed [UV摆动速]", Vector) = (19, 9,-16,-7)
 
@@ -27,6 +31,10 @@
 		_Fresnel ("Fresnel [菲涅尔光照因子]", float) = 0.3
 
 		_BorderTransparentFadeFactor ("Border Fade [水的边缘的透明渐变效果因子]", float) = 1.5
+
+		_WaveDirection("Wave Direction [波动方向]", Vector) = (1, 0, 0, 0)
+
+		
 	}
 
 
@@ -64,6 +72,7 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
+				float4 texCoord : TEXCOORD0;
 				float4 normal : TEXCOORD1;
 				float4 worldPos : TEXCOORD2;
 				float3 viewDir : TEXCOORD3;
@@ -74,17 +83,23 @@
 			sampler2D _BumpTex;
 			float4    _BumpTex_ST;
 
-			sampler2D _FoamTex;
-			float4    _FoamTex_ST;
+			sampler2D _WaterFoamTex;
+			float4    _WaterFoamTex_ST;
+
+			sampler2D _WaterRimNoise;
+			float4 _WaterRimNoise_ST;
+
+			samplerCUBE _SkyBox;
 
 			float  _BumpTexScale;
 			float4 _UVWaveSpeed;
 
 			float4 _WaterColor;
-			float4  _WaterBorderColor;
+			float4  _WaterRimColor;
             float  _WaveSpeed;
             float  _WaveLength;
             float  _WaveAmplitude;
+			float4 _WaveDirection;
 
             float _Steepness;
 
@@ -96,24 +111,51 @@
 			//相机的深度纹理，Unity内置
 			sampler2D _CameraDepthTexture;
 
+			//Gerstner波
+			float4 GetGerstnerWaveVertex(float4 vertex, float steepness, float waveLength, float speed, float amplitude)
+			{
+				float factorW = 2 * UNITY_PI / waveLength;
+
+				float3 direction = normalize(_WaveDirection - vertex);
+
+				float factortrangle = factorW * direction.x + speed * _Time.y;
+
+				float factorQ = steepness;
+
+				float cosFactor = pow(cos(factortrangle), 2);
+				float sinFactor = pow(sin(factortrangle), 2);
+
+				float4 vertexWavePos;
+
+				vertexWavePos.x = vertex.x + direction.x * factorQ * amplitude * cosFactor;
+				vertexWavePos.y = factorQ * sinFactor;
+				vertexWavePos.z = vertex.z + direction.z * factorQ  * amplitude *  cosFactor;
+				vertexWavePos.w = vertex.w;
+
+				return vertexWavePos;
+			}
+
+			float GetWaverDepth(float4 screenPos)
+			{
+				//水面边缘的透明渐变因子  [远处 -> 岸边 颜色越来越透，形成离岸越近水越浅的效果]
+				float4 screenPosNorm = screenPos / screenPos.w;
+
+				screenPosNorm.z = (UNITY_NEAR_CLIP_VALUE >= 0) ? screenPosNorm.z : screenPosNorm.z * 0.5 + 0.5;
+
+				//非线性的深度值 sceneDepth是GPU中的深度Buffer中的值，记录着在当前顶点渲染之前的最新的顶点深度值。
+				//转换为View空间的线性值
+				float linearSceneDepth = LinearEyeDepth(UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(screenPosNorm))));
+
+			 	return (linearSceneDepth - LinearEyeDepth(screenPosNorm.z)) / (lerp(1.0, (1.0 / _ProjectionParams.z), unity_OrthoParams.w));
+			}
+
 			v2f vert (appdata v)
 			{
 				v2f o;
 
                 o.viewDir.xzy = normalize(WorldSpaceViewDir(v.vertex));
 
-                //摆动坐标
-                float4 vertexWavePos;
-
-                float vecFactorArgument = (6.28318 / _WaveLength) * o.viewDir.xzy + _WaveSpeed * _Time.y;
-
-                float cosFactor = pow(cos(vecFactorArgument), 2);
-                float sinFactor = pow(sin(vecFactorArgument), 2);
-                
-                vertexWavePos.x = v.vertex.x + _Steepness * _WaveAmplitude * o.viewDir.x * cosFactor;
-                vertexWavePos.y = _Steepness * sinFactor;
-                vertexWavePos.z = v.vertex.z + _Steepness * _WaveAmplitude * o.viewDir.z * cosFactor;
-				vertexWavePos.w = v.vertex.w;
+				float4 vertexWavePos = GetGerstnerWaveVertex(v.vertex, _Steepness, _WaveLength, _WaveSpeed, _WaveAmplitude);
 
                 o.vertex = UnityObjectToClipPos(vertexWavePos);
 
@@ -150,29 +192,19 @@
 				float3 bump2 = UnpackNormal(tex2D(_BumpTex, i.normal.zw)).rgb;
 				float3 bump = (bump1 + bump2) * 0.5;
 
-				//用来计算光照的菲涅尔因子
+				//海岸的水逐步变浅，带点泡沫
+				float waveDepth = GetWaverDepth(i.screenPos);
+				float fadeWeight = pow(1 - saturate(waveDepth), _BorderTransparentFadeFactor);
+				
+				float4 noisePixel = tex2D(_WaterRimNoise, bump.xy);
+				float4 rimColor = float4(_WaterRimColor.rgb  , _WaterRimColor.a*noisePixel.r);
+
+				float4 foamPixel = tex2D(_WaterFoamTex, bump.xy);
+
+				float4 color = lerp(_WaterColor, rimColor, fadeWeight);
+
 				half fresnelFac =  fresnelSchlick(1-dot(i.viewDir.xyz, bump), _Fresnel);
-
-
-				//水面边缘的透明渐变因子  [远处 -> 岸边 颜色越来越透，形成离岸越近水越浅的效果]
-				float2 normalizeSceneVertex = i.screenPos.xy/i.screenPos.w;
-
-				//非线性的深度值 sceneDepth是GPU中的深度Buffer中的值，记录着在当前顶点渲染之前的最新的顶点深度值。
-				float sceneDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, normalizeSceneVertex);
-				//转换为View空间的线性值
-				float linearSceneDepth = LinearEyeDepth(sceneDepth);
-
-				//当前顶点的深度值
-				float vertexDepth = i.screenPos.w;
-
-				float4 foamColor = tex2D(_FoamTex, i.normal.xy);
-
-				float fadeWeight = (1 - saturate((linearSceneDepth - vertexDepth) * _BorderTransparentFadeFactor));
-
-				float4 color = lerp(_WaterColor, _WaterBorderColor, fadeWeight);
-
-				//边缘直接使用泡沫的颜色
-				color = lerp(color, foamColor, fadeWeight);
+				color = float4(lerp(color, foamPixel*fadeWeight, fresnelFac).rgb, color.a);
 
 				//Phong漫反射光照
 				float4 diffuse = max(dot(bump, i.lightDir.xyz), 0);
@@ -181,9 +213,9 @@
 				float3 halfwayDir = normalize(i.lightDir.xyz + i.viewDir.xyz);
 				float4 specular = pow(max(dot(bump, halfwayDir), 0.0), _Shininess);
 
-				color = float4(color.rgb * _LightColor0.rgb * diffuse + _LightColor0.rgb * specular, color.a);
+				color = float4(lerp(color.rgb, (UNITY_LIGHTMODEL_AMBIENT.xyz + _LightColor0.rgb * diffuse + _LightColor0.rgb * specular), fresnelFac), color.a);
 
-
+				//计算波浪法线, 波浪面泛光效果
 				return color;
 			}
 			ENDCG
