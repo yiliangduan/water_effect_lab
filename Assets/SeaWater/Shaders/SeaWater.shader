@@ -6,7 +6,9 @@
 
 		[HDR]_WaterColor("Water Color [水颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
 
-		[HDR]_WaterRimColor ("Water Border Color [水边缘颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
+		_WaterRimColor ("Water Border Color [水边缘颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
+
+		_WaterRimWaveTex("Water Rim Tex [水边缘浪的贴图]", 2D) = "white" {}
 
 		_WaterRimNoise ("Water Rim Noise [水边缘颜色噪点图]", 2D) = "white" {}
 
@@ -18,13 +20,15 @@
 
 		_UVWaveSpeed(" UV wave speed [UV摆动速]", Vector) = (19, 9,-16,-7)
 
+		_WaveSpeed("Wave Speed[波速]", float) = 1
+
+		_RimWaveSpeed("Rim Wave Speed[岸边的水浪速度]", float) = 1
+
         _WaveLength("Wave length [波长]", float) = 0.1
 
         _WaveAmplitude("Wave amplitude [振幅]", float) = 0.1
 
         _Steepness("Steepness[坡度]", Range(0, 1)) = 0.1
-
-        _WaveSpeed("Wave Speed[波速]", float) = 1
 
         _Shininess ("Shininess[反光度]", float) = 0.5
 
@@ -34,7 +38,7 @@
 
 		_WaveDirection("Wave Direction [波动方向]", Vector) = (1, 0, 0, 0)
 
-		
+		_DiffuseColor("Diffuse Color", Color) = (1.0, 1.0, 1.0, 1.0)
 	}
 
 
@@ -94,6 +98,8 @@
 			float  _BumpTexScale;
 			float4 _UVWaveSpeed;
 
+			float _RimWaveSpeed;
+
 			float4 _WaterColor;
 			float4  _WaterRimColor;
             float  _WaveSpeed;
@@ -101,12 +107,17 @@
             float  _WaveAmplitude;
 			float4 _WaveDirection;
 
+			sampler2D _WaterRimWaveTex;
+			float4 _WaterRimWaveTex_ST;
+
             float _Steepness;
 
             float _Shininess;
 			float _Fresnel;
 
 			float _BorderTransparentFadeFactor;
+
+			float4 _DiffuseColor;
 
 			//相机的深度纹理，Unity内置
 			sampler2D _CameraDepthTexture;
@@ -161,10 +172,7 @@
 
                 o.worldPos.xyz = mul(unity_ObjectToWorld, vertexWavePos);
 
-                //摆动法线
-                float4 bumpTexScale = float4(_BumpTexScale, _BumpTexScale, _BumpTexScale*0.4, _BumpTexScale*0.45);
- 
-                float4 temp = (o.worldPos.xzxz + _UVWaveSpeed * _Time.x) * bumpTexScale;
+                float4 temp = (o.worldPos.xzxz + _UVWaveSpeed * _Time.x);
 
                 o.normal.xy = temp.xy;
                 o.normal.zw = temp.zw;
@@ -192,19 +200,27 @@
 				float3 bump2 = UnpackNormal(tex2D(_BumpTex, i.normal.zw)).rgb;
 				float3 bump = (bump1 + bump2) * 0.5;
 
-				//海岸的水逐步变浅，带点泡沫
+				//水深的权重
 				float waveDepth = GetWaverDepth(i.screenPos);
 				float fadeWeight = pow(1 - saturate(waveDepth), _BorderTransparentFadeFactor);
 				
+				//噪声纹理，打散岸边的水，显得不均匀，自然一些。
 				float4 noisePixel = tex2D(_WaterRimNoise, bump.xy);
+
+				//岸边水的颜色，自定义的颜色，带白色
 				float4 rimColor = float4(_WaterRimColor.rgb  , _WaterRimColor.a*noisePixel.r);
-
-				float4 foamPixel = tex2D(_WaterFoamTex, bump.xy);
-
 				float4 color = lerp(_WaterColor, rimColor, fadeWeight);
 
+				//长带白浪
+				float4 waterRimWaveColor = tex2D(_WaterRimWaveTex, float2((fadeWeight + sin(_Time.y*_RimWaveSpeed + noisePixel.r)), 1)+bump)*noisePixel.r;
+
 				half fresnelFac =  fresnelSchlick(1-dot(i.viewDir.xyz, bump), _Fresnel);
-				color = float4(lerp(color, foamPixel*fadeWeight, fresnelFac).rgb, color.a);
+
+				//岸边的水混合一点泡沫
+				float4 foamPixel = tex2D(_WaterFoamTex, bump.xy);
+				color = float4(lerp(color, foamPixel*fadeWeight, fresnelFac).rgb, color.a * (1-fadeWeight));
+
+				color += waterRimWaveColor*(fadeWeight);
 
 				//Phong漫反射光照
 				float4 diffuse = max(dot(bump, i.lightDir.xyz), 0);
@@ -213,10 +229,11 @@
 				float3 halfwayDir = normalize(i.lightDir.xyz + i.viewDir.xyz);
 				float4 specular = pow(max(dot(bump, halfwayDir), 0.0), _Shininess);
 
-				color = float4(lerp(color.rgb, (UNITY_LIGHTMODEL_AMBIENT.xyz + _LightColor0.rgb * diffuse + _LightColor0.rgb * specular), fresnelFac), color.a);
+				color = float4(color.rgb + (specular )*_LightColor0.rgb*_DiffuseColor.rgb, color.a);
 
-				//计算波浪法线, 波浪面泛光效果
-				return color;
+				//FIXME 水面反光效果
+
+				return float4(i.viewDir, 1);
 			}
 			ENDCG
 		}
