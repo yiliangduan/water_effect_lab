@@ -70,18 +70,20 @@
 			struct appdata
 			{
 				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
+				float3 normal : NORMAL;
 			};
 
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
 				float4 texCoord : TEXCOORD0;
-				float4 normal : TEXCOORD1;
+				float4 bump : TEXCOORD1;
 				float4 worldPos : TEXCOORD2;
 				float3 viewDir : TEXCOORD3;
-                float4 lightDir : TEXCOORD4;
+                float3 lightDir : TEXCOORD4;
 				float4 screenPos : TEXCOORD5;
+				float3 reflect : TEXCOORD6;
+				float3 normal : TEXCOORD7;
 			};
 
 			sampler2D _BumpTex;
@@ -123,11 +125,9 @@
 			sampler2D _CameraDepthTexture;
 
 			//Gerstner波
-			float4 GetGerstnerWaveVertex(float4 vertex, float steepness, float waveLength, float speed, float amplitude)
+			float4 get_gerstner_wave_vertex(float4 vertex, float3 direction,float steepness, float waveLength, float speed, float amplitude)
 			{
 				float factorW = 2 * UNITY_PI / waveLength;
-
-				float3 direction = normalize(_WaveDirection - vertex);
 
 				float factortrangle = factorW * direction.x + speed * _Time.y;
 
@@ -146,7 +146,8 @@
 				return vertexWavePos;
 			}
 
-			float GetWaverDepth(float4 screenPos)
+			//波的深度值
+			float get_wave_depth(float4 screenPos)
 			{
 				//水面边缘的透明渐变因子  [远处 -> 岸边 颜色越来越透，形成离岸越近水越浅的效果]
 				float4 screenPosNorm = screenPos / screenPos.w;
@@ -164,76 +165,88 @@
 			{
 				v2f o;
 
-                o.viewDir.xzy = normalize(WorldSpaceViewDir(v.vertex));
-
-				float4 vertexWavePos = GetGerstnerWaveVertex(v.vertex, _Steepness, _WaveLength, _WaveSpeed, _WaveAmplitude);
+				float3 direction = normalize(_WaveDirection - v.vertex);
+				float4 vertexWavePos = get_gerstner_wave_vertex(v.vertex, direction, _Steepness, _WaveLength, _WaveSpeed, _WaveAmplitude);
 
                 o.vertex = UnityObjectToClipPos(vertexWavePos);
 
-                o.worldPos.xyz = mul(unity_ObjectToWorld, vertexWavePos);
+                o.worldPos = mul(unity_ObjectToWorld, vertexWavePos);
+				o.viewDir.xyz = direction;//normalize(WorldSpaceViewDir(o.worldPos));
 
-                float4 temp = (o.worldPos.xzxz + _UVWaveSpeed * _Time.x);
+				float4 bumpTexScale = float4(_BumpTexScale, _BumpTexScale, _BumpTexScale*0.4, _BumpTexScale*0.45);
+                float4 temp = (o.worldPos.xzxz + _UVWaveSpeed * _Time.x) * bumpTexScale;
 
-                o.normal.xy = temp.xy;
-                o.normal.zw = temp.zw;
+                o.bump.xy = temp.xy;
+                o.bump.zw = temp.zw;
    
-                float3 vertexToLightSource = o.worldPos.xyz - _WorldSpaceLightPos0.xyz;
-                o.lightDir.xyz = normalize(vertexToLightSource);
-                o.lightDir.w = 1.0 / length(vertexToLightSource);
+                o.lightDir = normalize(WorldSpaceLightDir(o.worldPos));
 
 				//屏幕坐标
 				o.screenPos = ComputeScreenPos(o.vertex);
+				o.normal = UnityObjectToWorldNormal(v.normal);
+
+				//反射不根据viewDir来算，直接自己指定一个视角，这样不会因为水面片太小导致反射的像素扭曲
+				o.reflect = reflect(-direction.xyz, o.normal.xyz); 
 
 				return o;
 			}
 
 			//菲涅尔因子 cosTheta = dot( norliaze(normalize(Normal), normalize(cameraPosition - worldPos))
-			float fresnelSchlick(float cosTheta, float3 F0)
+			float fresnel_schlick(float cosTheta, float3 F0)
 			{
 				return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 2.0);
+			}
+
+			//计算光照
+			fixed3 cal_pixel_light_color(float3 bump, float3 lightDir, float3 reflect, float fresnelFac)
+			{
+				//环境光
+				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
+				//漫反射光照
+				fixed3 diffuse = max(dot(bump, lightDir), 0);
+				//反射
+				fixed3 reflection = texCUBE(_SkyBox, reflect).rgb;
+
+				fixed3 lightColor = ambient + lerp(diffuse*_DiffuseColor.rgb*_LightColor0.rgb, reflection, fresnelFac);
+
+				return lightColor;
 			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
                 //法线从两个方向交叉摆动，形成一种来回的水面波纹
-				float3 bump1 = UnpackNormal(tex2D(_BumpTex, i.normal.xy)).rgb;
-				float3 bump2 = UnpackNormal(tex2D(_BumpTex, i.normal.zw)).rgb;
+				//不使用blue颜色，bump贴图的blue颜色太强了。
+				float3 bump1 = UnpackNormal(tex2D(_BumpTex, i.bump.xy)).rgr; 
+				float3 bump2 = UnpackNormal(tex2D(_BumpTex, i.bump.zw)).rgr;
 				float3 bump = (bump1 + bump2) * 0.5;
 
 				//水深的权重
-				float waveDepth = GetWaverDepth(i.screenPos);
+				float waveDepth = get_wave_depth(i.screenPos);
 				float fadeWeight = pow(1 - saturate(waveDepth), _BorderTransparentFadeFactor);
 				
 				//噪声纹理，打散岸边的水，显得不均匀，自然一些。
 				float4 noisePixel = tex2D(_WaterRimNoise, bump.xy);
+				half fresnelFac =  fresnel_schlick(1-dot(bump, i.lightDir.xyz), _Fresnel);
 
 				//岸边水的颜色，自定义的颜色，带白色
 				float4 rimColor = float4(_WaterRimColor.rgb  , _WaterRimColor.a*noisePixel.r);
 				float4 color = lerp(_WaterColor, rimColor, fadeWeight);
 
-				//长带白浪
-				float4 waterRimWaveColor = tex2D(_WaterRimWaveTex, float2((fadeWeight + sin(_Time.y*_RimWaveSpeed + noisePixel.r)), 1)+bump)*noisePixel.r;
-
-				half fresnelFac =  fresnelSchlick(1-dot(i.viewDir.xyz, bump), _Fresnel);
-
 				//岸边的水混合一点泡沫
-				float4 foamPixel = tex2D(_WaterFoamTex, bump.xy);
+				float4 foamPixel = tex2D(_WaterFoamTex, bump.xy);            
 				color = float4(lerp(color, foamPixel*fadeWeight, fresnelFac).rgb, color.a * (1-fadeWeight));
 
-				color += waterRimWaveColor*(fadeWeight);
+				//长带白浪
+				float4 waterRimWaveColor = tex2D(_WaterRimWaveTex, float2((fadeWeight + sin(_Time.y*_RimWaveSpeed + noisePixel.r)), 1)+bump)*noisePixel.r;
+				color += waterRimWaveColor*fadeWeight;
 
-				//Phong漫反射光照
-				float4 diffuse = max(dot(bump, i.lightDir.xyz), 0);
+				//光照
+				fixed3 lightColor = cal_pixel_light_color(bump, i.lightDir.xyz, i.reflect, fresnelFac);
 
-				//Blin-Phong高光
-				float3 halfwayDir = normalize(i.lightDir.xyz + i.viewDir.xyz);
-				float4 specular = pow(max(dot(bump, halfwayDir), 0.0), _Shininess);
+				//水的颜色+光照
+				color = float4(color.rgb + lightColor, color.a);
 
-				color = float4(color.rgb + (specular )*_LightColor0.rgb*_DiffuseColor.rgb, color.a);
-
-				//FIXME 水面反光效果
-
-				return float4(i.viewDir, 1);
+				return color;
 			}
 			ENDCG
 		}
