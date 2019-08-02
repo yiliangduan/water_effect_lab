@@ -158,7 +158,7 @@
 				//转换为View空间的线性值
 				float linearSceneDepth = LinearEyeDepth(UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(screenPosNorm))));
 
-			 	return (linearSceneDepth - LinearEyeDepth(screenPosNorm.z)) / (lerp(1.0, (1.0 / _ProjectionParams.z), unity_OrthoParams.w));
+			 	return (linearSceneDepth - LinearEyeDepth(screenPosNorm.z)) ;
 			}
 
 			v2f vert (appdata v)
