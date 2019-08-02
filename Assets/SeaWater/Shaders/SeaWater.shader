@@ -1,4 +1,4 @@
-﻿Shader "Unlit/SeaWater"
+﻿Shader "YiLiang/Effect/Water/SeaWater"
 {
 	Properties
 	{

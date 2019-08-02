@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: GerstnerWave
+  m_Name: SeaWater
   m_Shader: {fileID: 4800000, guid: f0c78d04fc6358843b6ab206cb82c484, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4

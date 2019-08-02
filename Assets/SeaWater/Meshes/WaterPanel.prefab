@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 3761739022100329769}
   - component: {fileID: 3761739022100329768}
   - component: {fileID: 3761739022100329767}
-  - component: {fileID: 3761739022100329766}
   m_Layer: 0
   m_Name: WaterPanel
   m_TagString: Untagged
@@ -26,9 +25,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3761739022100329765}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.48, y: -0.76, z: -2.43}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 4, y: 2, z: 4}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -40,7 +39,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3761739022100329765}
-  m_Mesh: {fileID: 4300000, guid: 988e512eab40c4dc780489883edd462a, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 3e035bb479ed02042b9859023872c4f2, type: 2}
 --- !u!23 &3761739022100329767
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -58,7 +57,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 545985ed4f6358a4a9ac2b82b97244c7, type: 2}
+  - {fileID: 2100000, guid: 07b62902f5c03804491c2bab5dd294c3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -78,19 +77,3 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!114 &3761739022100329766
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3761739022100329765}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf8f98aee56defe4abc190ca4a70a646, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  TileCountOfWidth: 18
-  TileCountOfHeight: 18
-  TileGridNum: 10
-  TaregetMaterial: {fileID: 2100000, guid: 07b62902f5c03804491c2bab5dd294c3, type: 2}
