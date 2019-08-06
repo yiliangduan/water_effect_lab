@@ -1,3 +1,3 @@
 海水效果:
 
-![image](http://github.com/yiliangduan/water_effect_lab/effect-picture.png)
+![image](https://github.com/yiliangduan/water_effect_lab/blob/master/effect-picture.png)
