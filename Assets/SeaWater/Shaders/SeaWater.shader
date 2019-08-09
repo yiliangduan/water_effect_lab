@@ -181,8 +181,7 @@
 				o.screenPos = ComputeScreenPos(o.vertex);
 				o.normal = UnityObjectToWorldNormal(v.normal);
 
-				//反射不根据viewDir来算，直接自己指定一个视角，这样不会因为水面片太小导致反射的像素扭曲
-				o.reflect = reflect(-direction.xyz, o.normal.xyz); 
+				o.reflect = reflect(-o.viewDir.xyz, o.normal.xyz); 
 
 				return o;
 			}
