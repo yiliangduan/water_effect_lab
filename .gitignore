@@ -52,3 +52,7 @@ Mkfile.old
 dkms.conf
 /Library
 /obj
+/Assets/Standard Assets
+/Assets/Standard Assets.meta
+/Temp/UnityLockfile
+/Temp

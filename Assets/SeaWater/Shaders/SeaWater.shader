@@ -6,15 +6,13 @@
 
 		[HDR]_WaterColor("Water Color [水颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
 
-		_WaterRimColor ("Water Border Color [水边缘颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
+		_WaterRimColor ("Water Rim Color [水边缘颜色]", Color) = (1.0, 1.0, 1.0, 1.0)
 
 		_WaterRimWaveTex("Water Rim Tex [水边缘浪的贴图]", 2D) = "white" {}
 
 		_WaterRimNoise ("Water Rim Noise [水边缘颜色噪点图]", 2D) = "white" {}
 
 		_BumpTexScale("Bump Tex scale [凹凸贴图缩放]", Range(0, 1)) = 0.063
-
-		_SkyBox("SkyBox Reflection Map", Cube) = "" {}
 
 		_WaterFoamTex("Foam Tex[泡沫]", 2D) = "white"{}
 
@@ -47,14 +45,7 @@
 		Tags { "RenderType" = "Overlay" "Queue" = "Transparent" }
 
 		Blend SrcAlpha OneMinusSrcAlpha
-		ZWrite Off
-		Cull Off
 		LOD 100
-
-		GrabPass
-		{
-			"_RefractionTex"
-		}
 
 		Pass
 		{
@@ -63,6 +54,11 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+
+			#pragma shader_feature _ DEBUG_DEPTH
+			#pragma shader_feature _ DEBUG_LIGHTING
+
+			#pragma shader_feature CS_BOOL
 			
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
@@ -94,8 +90,6 @@
 
 			sampler2D _WaterRimNoise;
 			float4 _WaterRimNoise_ST;
-
-			samplerCUBE _SkyBox;
 
 			float  _BumpTexScale;
 			float4 _UVWaveSpeed;
@@ -158,7 +152,9 @@
 				//转换为View空间的线性值
 				float linearSceneDepth = LinearEyeDepth(UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(screenPosNorm))));
 
-			 	return (linearSceneDepth - LinearEyeDepth(screenPosNorm.z)) ;
+				float depth = (linearSceneDepth - LinearEyeDepth(screenPosNorm.z));
+
+			 	return depth;
 			}
 
 			v2f vert (appdata v)
@@ -171,7 +167,7 @@
                 o.vertex = UnityObjectToClipPos(vertexWavePos);
 
                 o.worldPos = mul(unity_ObjectToWorld, vertexWavePos);
-				o.viewDir.xyz = direction;//normalize(WorldSpaceViewDir(o.worldPos));
+				o.viewDir.xyz = direction;
 
 				float4 bumpTexScale = float4(_BumpTexScale, _BumpTexScale, _BumpTexScale*0.4, _BumpTexScale*0.45);
                 float4 temp = (o.worldPos.xzxz + _UVWaveSpeed * _Time.x) * bumpTexScale;
@@ -198,16 +194,17 @@
 			}
 
 			//计算光照
-			fixed3 cal_pixel_light_color(float3 bump, float3 lightDir, float3 reflect, float fresnelFac)
+			fixed3 cal_pixel_light_color(float3 bump, float3 lightDir, float3 reflect)
 			{
 				//环境光
 				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
 				//漫反射光照
 				fixed3 diffuse = max(dot(bump, lightDir), 0);
 				//反射
-				fixed3 reflection = texCUBE(_SkyBox, reflect).rgb;
+				fixed4 reflection = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, reflect);
+				float3 hdrReflection = DecodeHDR(reflection, unity_SpecCube0_HDR);
 
-				fixed3 lightColor = ambient + lerp(diffuse*_DiffuseColor.rgb*_LightColor0.rgb, reflection, fresnelFac);
+				fixed3 lightColor = (ambient + diffuse*_DiffuseColor.rgb) * hdrReflection;
 
 				return lightColor;
 			}
@@ -241,14 +238,20 @@
 				color += waterRimWaveColor*fadeWeight;
 
 				//光照
-				fixed3 lightColor = cal_pixel_light_color(bump, i.lightDir.xyz, i.reflect, fresnelFac);
+				fixed3 lightColor = cal_pixel_light_color(bump, i.lightDir.xyz, i.reflect);
 
 				//水的颜色+光照
 				color = float4(color.rgb + lightColor, color.a);
 
+#if DEBUG_DEPTH
+				return float4(fadeWeight, fadeWeight, fadeWeight, 1);
+#else
 				return color;
+#endif
 			}
 			ENDCG
 		}
 	}
+
+	CustomEditor "SeaWaterShaderGUI"
 }  

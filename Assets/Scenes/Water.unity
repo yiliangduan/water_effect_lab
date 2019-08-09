@@ -272,6 +272,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: WaterPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 3761739022100329765, guid: 30d6e6d67a1d89647a9b3c03ed1eb300,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3761739022100329769, guid: 30d6e6d67a1d89647a9b3c03ed1eb300,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -411,3 +416,92 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 6.71, y: 37.71, z: -0.006}
+--- !u!1001 &1895103810920439506
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1895103812203693320, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_Name
+      value: Reflection Probe
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 17.550667
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 20.997963
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693326, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693321, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_BoxProjection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693321, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693321, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1895103812203693321, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc,
+        type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 9d0115bb03ba8fb4ba1d4e5369fcf5bc, type: 3}
