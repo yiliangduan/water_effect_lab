@@ -97,8 +97,8 @@ Material:
     - _Debug: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FoamDensity: 0.392
-    - _Fresnel: 0.1
+    - _FoamDensity: 0.356
+    - _Fresnel: 0.33
     - _FresnelFactor: 0.05
     - _FresnelPOW: 5
     - _GlossMapScale: 1
@@ -109,7 +109,9 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Phase: 0.1
-    - _RimFade: 0.162
+    - _RimAlphaStrength: 0.1
+    - _RimFade: 0.2
+    - _RimSmoothness: 1
     - _RimWaveSpeed: 0.1
     - _Roughness: 0.91
     - _Shininess: 1
@@ -135,8 +137,8 @@ Material:
     - _UVWaveSpeed: {r: 20, g: 10, b: -15, a: -20}
     - _VertexOffset: {r: 0, g: 0, b: 0, a: 0}
     - _WaterBorderColor: {r: 0.31083125, g: 0.46472138, b: 0.5188679, a: 0.11372549}
-    - _WaterColor: {r: 0.051041294, g: 0.27078983, b: 0.3490566, a: 1}
-    - _WaterRimColor: {r: 0.27536488, g: 0.49056602, b: 0.45887637, a: 1}
+    - _WaterColor: {r: 0.021181917, g: 0.21353239, b: 0.26415092, a: 1}
+    - _WaterRimColor: {r: 0.48393556, g: 0.8207547, b: 0.7230515, a: 1}
     - _WaveDir: {r: 4.54, g: 2.13, b: 2.61, a: 1}
     - _WaveDirection: {r: 1, g: 4, b: 0, a: 0}
     - _WaveSpeed: {r: -9, g: 4.5, b: -8, a: -3.5}

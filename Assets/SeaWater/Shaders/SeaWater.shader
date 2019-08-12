@@ -34,9 +34,9 @@
 
 		_WaveDirection("Wave Direction [波动方向]", Vector) = (1, 0, 0, 0)
 
-		_DiffuseColor("Diffuse Color", Color) = (1.0, 1.0, 1.0, 1.0)
-
 		_RimFade ("Rim Fade [岸边渐变]", Range(0, 1)) = 0.5
+
+		_RimSmoothness("Rim Smoothness [岸边深度平滑]", float) = 2
 
 		_FoamDensity("Foam Density [泡沫浓度]", Range(0, 1)) = 0.5
 	}
@@ -96,6 +96,7 @@
 
 			float _RimWaveSpeed;
 			float _RimFade;
+			float _RimSmoothness;
 			
 			float4 _WaterColor;
 			float4  _WaterRimColor;
@@ -111,8 +112,6 @@
 
             float _Shininess;
 			float _Fresnel;
-
-			float4 _DiffuseColor;
 
 			float _FoamDensity;
 
@@ -202,23 +201,25 @@
 				float3 bump = (bump1 + bump2) * 0.5;
 
 				//水深的权重
-				float waveDepth = get_wave_depth(i.screenPos);
-				float fadeWeight = saturate(1 - saturate(waveDepth));
+				float waveDepth = saturate(get_wave_depth(i.screenPos));
+				float waveDepthReverse = pow(saturate(1 - waveDepth), _RimSmoothness);
 				
 				//噪声纹理，打散岸边的水，显得不均匀，自然一些。
 				float4 noisePixel = tex2D(_WaterRimNoise, bump.xy);
 
+				//菲涅尔混合
+				half fresnelFac =  fresnel_schlick(1-dot(bump, i.lightDir.xyz), _Fresnel);
+
 				//岸边水的颜色，自定义的颜色，带白色
-				float4 rimColor = float4(_WaterRimColor.rgb  , _WaterRimColor.a*noisePixel.r);
-				float4 color = lerp(_WaterColor, rimColor, fadeWeight);
+				float4 color = float4(lerp(_WaterColor.rgb, _WaterRimColor.rgb, waveDepthReverse), _WaterColor.a*waveDepth);
 
 				//岸边的水混合一点泡沫
 				float4 foamPixel = tex2D(_WaterFoamTex, bump.xy);            
 				color = lerp(color, foamPixel, foamPixel.r*_FoamDensity);
 
 				//长带白浪
-				float4 waterRimWaveColor = tex2D(_WaterRimWaveTex, float2((fadeWeight + sin(_Time.y*_RimWaveSpeed + noisePixel.r)), 1)+bump)*noisePixel.r;
-				color += waterRimWaveColor*fadeWeight;
+				float4 waterRimWaveColor = tex2D(_WaterRimWaveTex, float2((waveDepthReverse + sin(_Time.y*_RimWaveSpeed + noisePixel.r)), 1)+bump)*noisePixel.r;
+				color += waterRimWaveColor*waveDepthReverse;
 
 				//环境光
 				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
@@ -231,8 +232,6 @@
 				fixed4 reflection = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, i.reflect);
 				float3 hdrReflection = DecodeHDR(reflection, unity_SpecCube0_HDR);
 
-				//菲涅尔混合
-				half fresnelFac =  fresnel_schlick(1-dot(bump, i.lightDir.xyz), _Fresnel);
 				fixed3 lightColor = lerp((ambient + diffuse + specular), hdrReflection, fresnelFac);
 
 				//水的颜色+光照
