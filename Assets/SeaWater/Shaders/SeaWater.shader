@@ -32,11 +32,13 @@
 
 		_Fresnel ("Fresnel [菲涅尔光照因子]", float) = 0.3
 
-		_BorderTransparentFadeFactor ("Border Fade [水的边缘的透明渐变效果因子]", float) = 1.5
-
 		_WaveDirection("Wave Direction [波动方向]", Vector) = (1, 0, 0, 0)
 
 		_DiffuseColor("Diffuse Color", Color) = (1.0, 1.0, 1.0, 1.0)
+
+		_RimFade ("Rim Fade [岸边渐变]", Range(0, 1)) = 0.5
+
+		_FoamDensity("Foam Density [泡沫浓度]", Range(0, 1)) = 0.5
 	}
 
 
@@ -58,8 +60,6 @@
 			#pragma shader_feature _ DEBUG_DEPTH
 			#pragma shader_feature _ DEBUG_LIGHTING
 
-			#pragma shader_feature CS_BOOL
-			
 			#include "UnityCG.cginc"
 			#include "Lighting.cginc"
 
@@ -95,7 +95,8 @@
 			float4 _UVWaveSpeed;
 
 			float _RimWaveSpeed;
-
+			float _RimFade;
+			
 			float4 _WaterColor;
 			float4  _WaterRimColor;
             float  _WaveSpeed;
@@ -111,9 +112,9 @@
             float _Shininess;
 			float _Fresnel;
 
-			float _BorderTransparentFadeFactor;
-
 			float4 _DiffuseColor;
+
+			float _FoamDensity;
 
 			//相机的深度纹理，Unity内置
 			sampler2D _CameraDepthTexture;
@@ -152,7 +153,7 @@
 				//转换为View空间的线性值
 				float linearSceneDepth = LinearEyeDepth(UNITY_SAMPLE_DEPTH(tex2Dproj(_CameraDepthTexture, UNITY_PROJ_COORD(screenPosNorm))));
 
-				float depth = (linearSceneDepth - LinearEyeDepth(screenPosNorm.z));
+				float depth = (linearSceneDepth - LinearEyeDepth(screenPosNorm.z))*_RimFade;
 
 			 	return depth;
 			}
@@ -172,8 +173,8 @@
 				float4 bumpTexScale = float4(_BumpTexScale, _BumpTexScale, _BumpTexScale*0.4, _BumpTexScale*0.45);
                 float4 temp = (o.worldPos.xzxz + _UVWaveSpeed * _Time.x) * bumpTexScale;
 
-                o.bump.xy = temp.xy;
-                o.bump.zw = temp.zw;
+                o.bump.xy = TRANSFORM_TEX(temp.xy, _BumpTex);
+                o.bump.zw = TRANSFORM_TEX(temp.zw, _BumpTex);
    
                 o.lightDir = normalize(WorldSpaceLightDir(o.worldPos));
 
@@ -192,22 +193,6 @@
 				return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 2.0);
 			}
 
-			//计算光照
-			fixed3 cal_pixel_light_color(float3 bump, float3 lightDir, float3 reflect)
-			{
-				//环境光
-				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
-				//漫反射光照
-				fixed3 diffuse = max(dot(bump, lightDir), 0);
-				//反射
-				fixed4 reflection = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, reflect);
-				float3 hdrReflection = DecodeHDR(reflection, unity_SpecCube0_HDR);
-
-				fixed3 lightColor = (ambient + diffuse*_DiffuseColor.rgb) * hdrReflection;
-
-				return lightColor;
-			}
-
 			fixed4 frag (v2f i) : SV_Target
 			{
                 //法线从两个方向交叉摆动，形成一种来回的水面波纹
@@ -218,11 +203,10 @@
 
 				//水深的权重
 				float waveDepth = get_wave_depth(i.screenPos);
-				float fadeWeight = pow(1 - saturate(waveDepth), _BorderTransparentFadeFactor);
+				float fadeWeight = saturate(1 - saturate(waveDepth));
 				
 				//噪声纹理，打散岸边的水，显得不均匀，自然一些。
 				float4 noisePixel = tex2D(_WaterRimNoise, bump.xy);
-				half fresnelFac =  fresnel_schlick(1-dot(bump, i.lightDir.xyz), _Fresnel);
 
 				//岸边水的颜色，自定义的颜色，带白色
 				float4 rimColor = float4(_WaterRimColor.rgb  , _WaterRimColor.a*noisePixel.r);
@@ -230,23 +214,32 @@
 
 				//岸边的水混合一点泡沫
 				float4 foamPixel = tex2D(_WaterFoamTex, bump.xy);            
-				color = float4(lerp(color, foamPixel*fadeWeight, fresnelFac).rgb, color.a * (1-fadeWeight));
+				color = lerp(color, foamPixel, foamPixel.r*_FoamDensity);
 
 				//长带白浪
 				float4 waterRimWaveColor = tex2D(_WaterRimWaveTex, float2((fadeWeight + sin(_Time.y*_RimWaveSpeed + noisePixel.r)), 1)+bump)*noisePixel.r;
 				color += waterRimWaveColor*fadeWeight;
 
-				//光照
-				fixed3 lightColor = cal_pixel_light_color(bump, i.lightDir.xyz, i.reflect);
+				//环境光
+				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
+				//漫反射光照
+				fixed3 diffuse = _LightColor0.rgb * max(dot(bump, i.lightDir), 0);
+				//高光
+				fixed3 specular = _LightColor0.rgb * pow(max(dot(i.reflect, i.viewDir), 0), 16);
+
+				//反射
+				fixed4 reflection = UNITY_SAMPLE_TEXCUBE(unity_SpecCube0, i.reflect);
+				float3 hdrReflection = DecodeHDR(reflection, unity_SpecCube0_HDR);
+
+				//菲涅尔混合
+				half fresnelFac =  fresnel_schlick(1-dot(bump, i.lightDir.xyz), _Fresnel);
+				fixed3 lightColor = lerp((ambient + diffuse + specular), hdrReflection, fresnelFac);
 
 				//水的颜色+光照
-				color = float4(color.rgb + lightColor, color.a);
+				color = float4(lightColor+color.rgb, color.a);
 
-#if DEBUG_DEPTH
-				return float4(fadeWeight, fadeWeight, fadeWeight, 1);
-#else
 				return color;
-#endif
+
 			}
 			ENDCG
 		}

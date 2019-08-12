@@ -24,8 +24,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpTex:
-        m_Texture: {fileID: 2800000, guid: c79c19172192d1d488ad8096f1d5f1d4, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 56f8a3e191f1cb545b13a5811bd23b76, type: 3}
+        m_Scale: {x: 0.1, y: 0.1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
         m_Texture: {fileID: 0}
@@ -72,7 +72,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WaterFoamTex:
-        m_Texture: {fileID: 2800000, guid: 7c3eae9e61920e44b8420bc35d668ef7, type: 3}
+        m_Texture: {fileID: 2800000, guid: f9a01fd9a405ed24089bdd7bcc83323b, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _WaterRimNoise:
@@ -90,14 +90,15 @@ Material:
     m_Floats:
     - _Albedo: 1.79
     - _Amplitude: 0.1
-    - _BorderTransparentFadeFactor: 16
+    - _BorderTransparentFadeFactor: 1
     - _BumpScale: 1
     - _BumpTexScale: 0.924
     - _Cutoff: 0.5
     - _Debug: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _Fresnel: 0.2
+    - _FoamDensity: 0.392
+    - _Fresnel: 0.1
     - _FresnelFactor: 0.05
     - _FresnelPOW: 5
     - _GlossMapScale: 1
@@ -108,20 +109,21 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Phase: 0.1
+    - _RimFade: 0.162
     - _RimWaveSpeed: 0.1
     - _Roughness: 0.91
     - _Shininess: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Steepness: 0.05
+    - _Steepness: 0.26
     - _UVSec: 0
     - _UVWaveEnable: 1
     - _WaveAmplitude: 0.2
-    - _WaveLength: 0.6
+    - _WaveLength: 0.1
     - _WaveLengthFactor: 1.5
     - _WaveScale: 0.118
-    - _WaveSpeed: 0.2
+    - _WaveSpeed: 0.5
     - _WaveSpeedFactor: 0.5
     - _ZWrite: 1
     m_Colors:
@@ -130,11 +132,11 @@ Material:
     - _DiffuseColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecularColor: {r: 0.78964937, g: 0.8445584, b: 0.8584906, a: 0.1882353}
-    - _UVWaveSpeed: {r: 2, g: 1, b: -1, a: -2}
+    - _UVWaveSpeed: {r: 20, g: 10, b: -15, a: -20}
     - _VertexOffset: {r: 0, g: 0, b: 0, a: 0}
     - _WaterBorderColor: {r: 0.31083125, g: 0.46472138, b: 0.5188679, a: 0.11372549}
-    - _WaterColor: {r: 0.019607844, g: 0.14901961, b: 0.21176471, a: 0.92941177}
-    - _WaterRimColor: {r: 1, g: 1, b: 1, a: 0.41960785}
+    - _WaterColor: {r: 0.051041294, g: 0.27078983, b: 0.3490566, a: 1}
+    - _WaterRimColor: {r: 0.27536488, g: 0.49056602, b: 0.45887637, a: 1}
     - _WaveDir: {r: 4.54, g: 2.13, b: 2.61, a: 1}
     - _WaveDirection: {r: 1, g: 4, b: 0, a: 0}
     - _WaveSpeed: {r: -9, g: 4.5, b: -8, a: -3.5}
