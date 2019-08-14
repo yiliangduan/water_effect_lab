@@ -63,6 +63,10 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _ReflectionTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _ReflectiveColor:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -97,7 +101,7 @@ Material:
     - _Debug: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FoamDensity: 0.356
+    - _FoamDensity: 0.57
     - _Fresnel: 0.33
     - _FresnelFactor: 0.05
     - _FresnelPOW: 5
@@ -109,12 +113,18 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _Phase: 0.1
+    - _Reflection: 0
+    - _ReflectionDistort: 0.166
+    - _ReflectionMaxStrength: 0.8
+    - _ReflectionMinStrength: 0.023
+    - _ReflectionStrength: 0.227
     - _RimAlphaStrength: 0.1
     - _RimFade: 0.2
     - _RimSmoothness: 1
     - _RimWaveSpeed: 0.1
     - _Roughness: 0.91
     - _Shininess: 1
+    - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -133,12 +143,13 @@ Material:
     - _Color: {r: 0.047307514, g: 0.88304263, b: 0.9191176, a: 0.466}
     - _DiffuseColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _ReflectionRange: {r: 1, g: 0, b: 0, a: 0}
     - _SpecularColor: {r: 0.78964937, g: 0.8445584, b: 0.8584906, a: 0.1882353}
     - _UVWaveSpeed: {r: 20, g: 10, b: -15, a: -20}
     - _VertexOffset: {r: 0, g: 0, b: 0, a: 0}
     - _WaterBorderColor: {r: 0.31083125, g: 0.46472138, b: 0.5188679, a: 0.11372549}
-    - _WaterColor: {r: 0.021181917, g: 0.21353239, b: 0.26415092, a: 1}
-    - _WaterRimColor: {r: 0.48393556, g: 0.8207547, b: 0.7230515, a: 1}
+    - _WaterColor: {r: 0.1014151, g: 0.3416087, b: 0.4056604, a: 1}
+    - _WaterRimColor: {r: 0.45990568, g: 0.6132076, b: 0.5686431, a: 1}
     - _WaveDir: {r: 4.54, g: 2.13, b: 2.61, a: 1}
     - _WaveDirection: {r: 1, g: 4, b: 0, a: 0}
     - _WaveSpeed: {r: -9, g: 4.5, b: -8, a: -3.5}
