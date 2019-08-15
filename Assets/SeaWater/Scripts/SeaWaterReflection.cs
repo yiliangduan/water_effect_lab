@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿/*
+ *参考自: https://wiki.unity3d.com/index.php/MirrorReflection3
+ */
+
+using UnityEngine;
 
 public class SeaWaterReflection : MonoBehaviour
 {
