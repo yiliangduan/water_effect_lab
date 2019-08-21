@@ -196,6 +196,21 @@
 				return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 2.0);
 			}
 
+			//计算光照
+			fixed3 cal_pixel_light_color(float3 bump, float3 lightDir, float3 reflect, float3 viewDir)
+			{
+				//环境光
+				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
+				//漫反射光照
+				fixed3 diffuse = _LightColor0.rgb * max(dot(bump, lightDir), 0);
+				//高光
+				fixed3 specular = _LightColor0.rgb * pow(max(dot(reflect, viewDir), 0), 16);
+
+				fixed3 lightColor = ambient + diffuse + specular;
+
+				return lightColor;
+			}
+
 			fixed4 frag (v2f i) : SV_Target
 			{
 				//法线从两个方向交叉摆动，形成一种来回的水面波纹
@@ -225,15 +240,10 @@
 				float4 waterRimWaveColor = tex2D(_WaterRimWaveTex, float2((waveDepthReverse + sin(_Time.y*_RimWaveSpeed + noisePixel.r)), 1)+bump)*noisePixel.r;
 				color += waterRimWaveColor*waveDepthReverse;
 				
-				//环境光
-				fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.xyz;
-				//漫反射光照
-				fixed3 diffuse = _LightColor0.rgb * max(dot(bump, i.lightDir), 0);
-				//高光
-				fixed3 specular = _LightColor0.rgb * pow(max(dot(i.reflect.xyz, i.viewDir), 0), 16);
+				fixed3 lightColor = cal_pixel_light_color(bump, i.lightDir, i.reflect, i.viewDir);
 				
 				//水的颜色+光照
-				color = float4(ambient + diffuse + specular + color.rgb, color.a);
+				color = float4(lightColor + color.rgb, color.a);
 				
 				#if ENABLE_REFLECTION
 				//采样倒影的贴图
