@@ -71,3 +71,4 @@ dkms.conf
 /.vs/water_effect_lab/v15/Server/sqlite3/storage.ide-shm
 /.vs/water_effect_lab/v15/Server/sqlite3/storage.ide-wal
 /.vscode/settings.json
+/Logs
