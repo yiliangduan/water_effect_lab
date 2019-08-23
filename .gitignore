@@ -56,3 +56,18 @@ dkms.conf
 /Assets/Standard Assets.meta
 /Temp/UnityLockfile
 /Temp
+/Packages
+/Assembly-CSharp.csproj
+/Assembly-CSharp-Editor.csproj
+/Assembly-CSharp-Editor-firstpass.csproj
+/Assembly-CSharp-firstpass.csproj
+/TestCameraDepth.sln
+/water_effect_lab.sln
+/WaterLab.sln
+/.vs/water_effect_lab/v15/.suo
+/.vs/water_effect_lab/v15/Browse.VC.db
+/.vs/water_effect_lab/v15/Server/sqlite3/db.lock
+/.vs/water_effect_lab/v15/Server/sqlite3/storage.ide
+/.vs/water_effect_lab/v15/Server/sqlite3/storage.ide-shm
+/.vs/water_effect_lab/v15/Server/sqlite3/storage.ide-wal
+/.vscode/settings.json
