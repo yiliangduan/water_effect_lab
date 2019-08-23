@@ -4,12 +4,12 @@ using UnityEditor;
 
 namespace YiLiang.Effect.Water
 {
-    [CustomEditor(typeof(WaterMeshGenerator))]
-    public class WaterMeshGeneratorEditor : Editor
+    [CustomEditor(typeof(MeshGenerator))]
+    public class MeshGeneratorEditor : Editor
     {
         public override void OnInspectorGUI()
         {
-            WaterMeshGenerator generator = target as WaterMeshGenerator;
+            MeshGenerator generator = target as MeshGenerator;
 
             if (null == generator)
             {

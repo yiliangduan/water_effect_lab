@@ -14,24 +14,26 @@ namespace YiLiang.Effect.Water
         public int TileCount = 8;
 
         /// <summary>
-        /// 每个块的网格分割
+        /// 每个块的垂直方向的三角形数
         /// </summary>
-        public int TileGridNum = 8;
+        public int TileVerticalVertexNum = 2;
+
+        public int TileHorizontalVertexNum = 2;
 
         /// <summary>
         /// Mesh名字
         /// </summary>
-        public string MeshName = "gerstner_wave_mesh.asset";
+        public string MeshAssetPath = "temporary.asset";
     }
 
-    public class WaterMeshGenerator : MonoBehaviour
+    public class MeshGenerator : MonoBehaviour
     {
 
         public MeshConfig Config = new MeshConfig();
 
         public void Create()
         {
-            string meshPath = "Assets/SeaWater/" + Config.MeshName;
+            string meshPath = "Assets/" + Config.MeshAssetPath;
 
             if (System.IO.File.Exists(meshPath))
             {
@@ -90,9 +92,9 @@ namespace YiLiang.Effect.Water
             {
                 name = "tile",
 
-                vertices = GeneratorVertices(Config.TileGridNum, Config.TileGridNum),
-                triangles = GeneratorTriangles(Config.TileGridNum, Config.TileGridNum),
-                colors = GeneratorColors(Config.TileGridNum, Config.TileGridNum)
+                vertices = GeneratorVertices(Config.TileHorizontalVertexNum, Config.TileVerticalVertexNum),
+                triangles = GeneratorTriangles(Config.TileHorizontalVertexNum, Config.TileVerticalVertexNum),
+                colors = GeneratorColors(Config.TileHorizontalVertexNum, Config.TileVerticalVertexNum)
             };
 
             mesh.RecalculateNormals();
@@ -125,12 +127,12 @@ namespace YiLiang.Effect.Water
                 for (int j = 0; j < width; ++j)
                 {
                     triangles[triangleIndex + 0] = i * (width + 1) + j;
-                    triangles[triangleIndex + 1] = (i + 1) * (width + 1) + j;
-                    triangles[triangleIndex + 2] = i * (width + 1) + j + 1;
+                    triangles[triangleIndex + 1] = i * (width + 1) + j + 1;
+                    triangles[triangleIndex + 2] = (i + 1) * (width + 1) + j;
 
                     triangles[triangleIndex + 3] = i * (width + 1) + j + 1;
-                    triangles[triangleIndex + 4] = (i + 1) * (width + 1) + j;
-                    triangles[triangleIndex + 5] = (i + 1) * (width + 1) + j + 1;
+                    triangles[triangleIndex + 4] = (i + 1) * (width + 1) + j + 1;
+                    triangles[triangleIndex + 5] = (i + 1) * (width + 1) + j;
 
                     triangleIndex += 6;
                 }
@@ -146,11 +148,12 @@ namespace YiLiang.Effect.Water
             float tileX = 1.0f / (float)(width);
             float tileY = 1.0f / (float)(height);
 
+            int verticesIndex = 0;
             for (int i = 0; i <= height; ++i)
             {
                 for (int j = 0; j <= width; ++j)
                 {
-                    vertices[i * (height + 1) + j] = new Vector3(tileX * j, 0, i * tileY);
+                    vertices[verticesIndex++] = new Vector3(tileX * j, 0, i * tileY);
                 }
             }
 
