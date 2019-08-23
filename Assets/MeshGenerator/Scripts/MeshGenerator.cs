@@ -127,12 +127,12 @@ namespace YiLiang.Effect.Water
                 for (int j = 0; j < width; ++j)
                 {
                     triangles[triangleIndex + 0] = i * (width + 1) + j;
-                    triangles[triangleIndex + 1] = i * (width + 1) + j + 1;
-                    triangles[triangleIndex + 2] = (i + 1) * (width + 1) + j;
+                    triangles[triangleIndex + 1] = (i + 1) * (width + 1) + j;
+                    triangles[triangleIndex + 2] = i * (width + 1) + j + 1;
 
                     triangles[triangleIndex + 3] = i * (width + 1) + j + 1;
-                    triangles[triangleIndex + 4] = (i + 1) * (width + 1) + j + 1;
-                    triangles[triangleIndex + 5] = (i + 1) * (width + 1) + j;
+                    triangles[triangleIndex + 4] = (i + 1) * (width + 1) + j;
+                    triangles[triangleIndex + 5] = (i + 1) * (width + 1) + j + 1;
 
                     triangleIndex += 6;
                 }
@@ -145,15 +145,12 @@ namespace YiLiang.Effect.Water
         {
             Vector3[] vertices = new Vector3[(width + 1) * (height + 1)];
 
-            float tileX = 1.0f / (float)(width);
-            float tileY = 1.0f / (float)(height);
-
             int verticesIndex = 0;
             for (int i = 0; i <= height; ++i)
             {
                 for (int j = 0; j <= width; ++j)
                 {
-                    vertices[verticesIndex++] = new Vector3(tileX * j, 0, i * tileY);
+                    vertices[verticesIndex++] = new Vector3(j, 0, i);
                 }
             }
 
